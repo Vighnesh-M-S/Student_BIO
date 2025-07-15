@@ -11,6 +11,9 @@ students = {}
 student_id_counter = 1
 lock = threading.Lock()
 
+OLLAMA_URL = "http://localhost:11434/api/generate"
+OLLAMA_MODEL = "gemma3:1b" 
+
 @app.route("/")
 def home():
     return "API is working!"
@@ -67,6 +70,32 @@ def delete_student(student_id):
         del students[student_id]
     return jsonify({"message": "Student deleted"})
 
+@app.route("/students/<int:student_id>/summary", methods=["GET"])
+def summarize_student(student_id):
+    student = students.get(student_id)
+    if not student:
+        return jsonify({"error": "Student not found"}), 404
+
+    prompt = f"""
+    Summarize the following student in 2-3 professional sentences.
+    Only output the summary. Do not ask any questions or provide options.
+
+    Name: {student['name']}
+    Age: {student['age']}
+    Email: {student['email']}
+    """
+
+    try:
+        response = requests.post(OLLAMA_URL, json={
+            "model": OLLAMA_MODEL,
+            "prompt": prompt,
+            "stream": False
+        })
+        response.raise_for_status()
+        result = response.json()
+        return jsonify({"summary": result["response"].strip()})
+    except requests.RequestException as e:
+        return jsonify({"error": "Failed to generate summary", "details": str(e)}), 500
 
 
 if __name__ == "__main__":
