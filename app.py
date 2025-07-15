@@ -2,8 +2,10 @@ from flask import Flask, request, jsonify
 import threading
 import requests
 import json
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 students = {}
 student_id_counter = 1
@@ -35,6 +37,37 @@ def create_student():
 @app.route("/students", methods=["GET"])
 def get_all_students():
     return jsonify(list(students.values()))
+
+@app.route("/students/<int:student_id>", methods=["GET"])
+def get_student(student_id):
+    student = students.get(student_id)
+    if not student:
+        return jsonify({"error": "Student not found"}), 404
+    return jsonify(student)
+
+@app.route("/students/<int:student_id>", methods=["PUT"])
+def update_student(student_id):
+    data = request.json
+    if student_id not in students:
+        return jsonify({"error": "Student not found"}), 404
+
+    with lock:
+        student = students[student_id]
+        student["name"] = data.get("name", student["name"])
+        student["age"] = data.get("age", student["age"])
+        student["email"] = data.get("email", student["email"])
+
+    return jsonify(student)
+
+@app.route("/students/<int:student_id>", methods=["DELETE"])
+def delete_student(student_id):
+    with lock:
+        if student_id not in students:
+            return jsonify({"error": "Student not found"}), 404
+        del students[student_id]
+    return jsonify({"message": "Student deleted"})
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -61,6 +61,17 @@ document.querySelector("#studentsTable").addEventListener("click", async (e) => 
     const id = e.target.dataset.id;
     if (!id) return;
 
+    if (e.target.classList.contains("delete")) {
+        if (!confirm("Delete this student?")) return;
+        try {
+          const res = await fetch(`${baseUrl}/students/${id}`, { method: "DELETE" });
+          if (!res.ok) throw new Error("Deletion failed");
+          fetchStudents();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+
     if (e.target.classList.contains("summary")) {
         try {
           const res = await fetch(`${baseUrl}/students/${id}/summary`);
