@@ -1,5 +1,8 @@
 const baseUrl = "http://127.0.0.1:5000";
 
+let editMode = false;
+let editId = null;
+
 async function fetchStudents() {
   try {
     const res = await fetch(`${baseUrl}/students`);
@@ -23,6 +26,7 @@ function renderStudents(students) {
       <td data-label="Email">${stu.email}</td>
       <td data-label="Actions" class="actions">
         <button data-id="${stu.id}" class="summary">Summary</button>
+        <button data-id="${stu.id}" class="edit">Edit</button>
         <button data-id="${stu.id}" class="delete delete">Delete</button>
       </td>
     `;
@@ -39,15 +43,31 @@ document.getElementById("studentForm").addEventListener("submit", async (e) => {
   if (!name || !email || isNaN(age)) return alert("Please fill all fields correctly.");
 
   try {
-    const res = await fetch(`${baseUrl}/students`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, age, email }),
-    });
+    if (editMode && editId !== null) {
+      // Update student
+      const res = await fetch(`${baseUrl}/students/${editId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, age, email }),
+      });
 
-    if (!res.ok) {
-      const { error } = await res.json();
-      throw new Error(error || "Failed to add student");
+      if (!res.ok) throw new Error("Failed to update student");
+
+      editMode = false;
+      editId = null;
+      document.querySelector("#studentForm button").textContent = "Add";
+    } else {
+      // Add new student
+      const res = await fetch(`${baseUrl}/students`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, age, email }),
+      });
+
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error || "Failed to add student");
+      }
     }
 
     e.target.reset();
@@ -83,6 +103,16 @@ document.querySelector("#studentsTable").addEventListener("click", async (e) => 
           } catch (err) {
             alert(err.message);
           }
+      }
+      if (e.target.classList.contains("edit")) {
+        const row = e.target.closest("tr").children;
+        document.getElementById("name").value = row[1].textContent;
+        document.getElementById("age").value = row[2].textContent;
+        document.getElementById("email").value = row[3].textContent;
+    
+        editMode = true;
+        editId = id;
+        document.querySelector("#studentForm button").textContent = "Update";
       }
     });
     
