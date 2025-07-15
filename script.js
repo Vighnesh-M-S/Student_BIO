@@ -74,13 +74,15 @@ document.querySelector("#studentsTable").addEventListener("click", async (e) => 
 
     if (e.target.classList.contains("summary")) {
         try {
-          const res = await fetch(`${baseUrl}/students/${id}/summary`);
-          if (!res.ok) throw new Error("Could not fetch summary");
-          const data = await res.json();
-          alert(`Summary for student ${id}:\n\n${data.summary}`);
-        } catch (err) {
-          alert(err.message);
-        }
+            const res = await fetch(`${baseUrl}/students/${id}/summary`);
+            if (!res.ok) throw new Error("Could not fetch summary");
+            const data = await res.json();
+            const box = document.getElementById("summaryBox");
+            box.style.display = "block";
+            box.textContent = `Summary for student ${id}: ${data.summary}`;
+          } catch (err) {
+            alert(err.message);
+          }
       }
     });
     

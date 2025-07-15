@@ -79,6 +79,15 @@ body {
   .actions button:hover {
     opacity: 0.9;
   }
+
+  #summaryBox {
+    margin-top: 2rem;
+    padding: 1rem;
+    border-left: 4px solid #007bff;
+    background: #e9f1ff;
+    font-style: italic;
+    display: none;
+  }
   
   @media (max-width: 600px) {
     table, thead, tbody, th, td, tr {
