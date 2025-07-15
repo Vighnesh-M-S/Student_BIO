@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import threading
 import requests
 import json
@@ -16,7 +16,7 @@ OLLAMA_MODEL = "gemma3:1b"
 
 @app.route("/")
 def home():
-    return "API is working!"
+    return render_template("index.html")
 
 @app.route("/students", methods=["POST"])
 def create_student():
